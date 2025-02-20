@@ -8,8 +8,6 @@ class ProcessException extends \RuntimeException
 {
     /**
      * ProcessException constructor.
-     *
-     * @param Process $process
      */
     public function __construct(Process $process)
     {

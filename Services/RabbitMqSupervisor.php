@@ -9,77 +9,32 @@ use Phobetor\RabbitMqSupervisorBundle\Helpers\ConfigurationHelper;
  */
 class RabbitMqSupervisor
 {
-    /**
-     * @var \Phobetor\RabbitMqSupervisorBundle\Services\Supervisor
-     */
-    private $supervisor;
+    private Supervisor $supervisor;
 
-    /**
-     * @var array
-     */
-    private $paths;
+    private array $paths;
 
-    /**
-     * @var array
-     */
-    private $commands;
+    private array $commands;
 
-    /**
-     * @var array
-     */
-    private $consumers;
+    private array $consumers;
 
-    /**
-     * @var array
-     */
-    private $multipleConsumers;
+    private array $multipleConsumers;
 
-    /**
-     * @var array
-     */
-    private $batchConsumers;
+    private array $batchConsumers;
 
-    /**
-     * @var array
-     */
-    private $rpcServers;
+    private array $rpcServers;
 
-    /**
-     * @var array
-     */
-    private $config;
+    private array $config;
 
-    /**
-     * @var string
-     */
-    private $rootDir;
+    private string $rootDir;
 
-    /**
-     * @var string
-     */
-    private $environment;
+    private string $environment;
 
-    /**
-     * @var string
-     */
-    private $sockFilePermissions;
+    private string $sockFilePermissions;
 
     /**
      * Initialize Handler
-     *
-     * @param \Phobetor\RabbitMqSupervisorBundle\Services\Supervisor $supervisor
-     * @param array $paths
-     * @param array $commands
-     * @param array $consumers
-     * @param array $multipleConsumers
-     * @param array $batchConsumers
-     * @param array $rpcServers
-     * @param array $config
-     * @param $sockFilePermissions
-     * @param string $kernelRootDir
-     * @param string $environment
      */
-    public function __construct(Supervisor $supervisor, array $paths, array $commands, $consumers, $multipleConsumers, $batchConsumers, $rpcServers, $config, $sockFilePermissions, $kernelRootDir, $environment)
+    public function __construct(Supervisor $supervisor, array $paths, array $commands, array $consumers, array $multipleConsumers, array $batchConsumers, array $rpcServers, array $config, string $sockFilePermissions, string $kernelRootDir, string $environment)
     {
         $this->supervisor = $supervisor;
         $this->paths = $paths;
@@ -94,27 +49,21 @@ class RabbitMqSupervisor
         $this->environment = $environment;
     }
 
-    /**
-     * @param bool $waitForSupervisord
-     */
-    public function setWaitForSupervisord($waitForSupervisord)
-    {
+    public function setWaitForSupervisord(bool $waitForSupervisord): void {
         $this->supervisor->setWaitForSupervisord($waitForSupervisord);
     }
 
     /**
      * Build supervisor configuration
      */
-    public function init()
-    {
+    public function init(): void {
         $this->generateSupervisorConfiguration();
     }
 
     /**
      * Build all supervisor worker configuration files
      */
-    public function build()
-    {
+    public function build(): void {
         $this->createPathDirectories();
 
         if (!is_file($this->createSupervisorConfigurationFilePath())) {
@@ -154,8 +103,7 @@ class RabbitMqSupervisor
     /**
      * Stop, build configuration for and start supervisord
      */
-    public function rebuild()
-    {
+    public function rebuild(): void {
         $this->stop();
         $this->build();
     }
@@ -163,8 +111,7 @@ class RabbitMqSupervisor
     /**
      * Stop and start supervisord to force all processes to restart
      */
-    public function restart()
-    {
+    public function restart(): void {
         $this->stop();
         $this->start();
     }
@@ -172,35 +119,28 @@ class RabbitMqSupervisor
     /**
      * Stop supervisord and all processes
      */
-    public function stop()
-    {
+    public function stop(): void {
         $this->kill('', true);
     }
 
     /**
      * Start supervisord and all processes
      */
-    public function start()
-    {
+    public function start(): void {
         $this->supervisor->run();
     }
 
     /**
      * Send -HUP to supervisord to gracefully restart all processes
      */
-    public function hup()
-    {
+    public function hup(): void {
         $this->kill('HUP');
     }
 
     /**
      * Send kill signal to supervisord
-     *
-     * @param string $signal
-     * @param bool $waitForProcessToDisappear
      */
-    public function kill($signal = '', $waitForProcessToDisappear = false)
-    {
+    public function kill(string $signal = '', bool $waitForProcessToDisappear = false): void {
         $pid = $this->getSupervisorPid();
         if (!empty($pid) && $this->isProcessRunning($pid)) {
             if (!empty($signal)) {
@@ -220,8 +160,7 @@ class RabbitMqSupervisor
     /**
      * Wait for supervisord process to disappear
      */
-    public function wait()
-    {
+    public function wait(): void {
         $pid = $this->getSupervisorPid();
         if (!empty($pid)) {
             while ($this->isProcessRunning($pid)) {
@@ -232,12 +171,8 @@ class RabbitMqSupervisor
 
     /**
      * Check if a process with the given pid is running
-     *
-     * @param int $pid
-     * @return bool
      */
-    private function isProcessRunning($pid)
-    {
+    private function isProcessRunning(int $pid): bool {
         $state = array();
         exec(sprintf('ps -o pid %d', $pid), $state);
 
@@ -255,11 +190,8 @@ class RabbitMqSupervisor
 
     /**
      * Determines the supervisord process id
-     *
-     * @return null|int
      */
-    private function getSupervisorPid()
-    {
+    private function getSupervisorPid(): ?int {
         $pidPath = $this->paths['pid_file'];
 
         $pid = null;
@@ -270,14 +202,13 @@ class RabbitMqSupervisor
         return $pid;
     }
 
-    private function createPathDirectories()
-    {
+    private function createPathDirectories(): void {
         foreach ($this->paths as $key => $path) {
             if ('php_executable' === $key) {
                 continue;
             }
 
-            if ('/' !== substr($path, -1, 1)) {
+            if (!str_ends_with($path, '/')) {
                 $path = dirname($path);
             }
 
@@ -287,8 +218,7 @@ class RabbitMqSupervisor
         }
     }
 
-    public function generateSupervisorConfiguration()
-    {
+    public function generateSupervisorConfiguration(): void {
         $configurationHelper = new ConfigurationHelper();
         $content = $configurationHelper->getConfigurationStringFromDataArray(array(
             'unix_http_server' => array(
@@ -323,8 +253,7 @@ class RabbitMqSupervisor
         );
     }
 
-    private function generateWorkerConfigurations($names, $baseCommand)
-    {
+    private function generateWorkerConfigurations($names, $baseCommand): void {
         // try different possible console paths (realpath() will throw away the not existing ones)
         $consolePaths = [];
         foreach (['bin', 'app'] as $consoleDirectory) {
@@ -408,7 +337,7 @@ class RabbitMqSupervisor
         }
     }
 
-    private function workerSpecificLogFile($originalFileName, $suffix) {
+    private function workerSpecificLogFile($originalFileName, $suffix): string {
         $extension = ".log";
         $pos = strrpos($originalFileName, $extension); 
 
@@ -419,7 +348,7 @@ class RabbitMqSupervisor
         return substr_replace($originalFileName, "_" . $suffix, $pos, 0);
     }
 
-    private function getConsumerOption($consumer, $key)
+    private function getConsumerOption($consumer, $key): mixed
     {
         $option = $this->getIndividualConsumerOption($consumer, $key);
         if (null !== $option) {
@@ -429,7 +358,7 @@ class RabbitMqSupervisor
         return $this->getGeneralConsumerOption($key);
     }
 
-    private function getIndividualConsumerOption($consumer, $key)
+    private function getIndividualConsumerOption($consumer, $key): mixed
     {
         if (empty($this->config['consumer']['individual'])) {
             return null;
@@ -446,7 +375,7 @@ class RabbitMqSupervisor
         return $this->config['consumer']['individual'][$consumer][$key];
     }
 
-    private function getGeneralConsumerOption($key)
+    private function getGeneralConsumerOption($key): mixed
     {
         if (!array_key_exists($key, $this->config['consumer']['general'])) {
             return null;
@@ -455,7 +384,7 @@ class RabbitMqSupervisor
         return $this->config['consumer']['general'][$key];
     }
 
-    private function getConsumerWorkerOption($consumer, $key)
+    private function getConsumerWorkerOption($consumer, $key): mixed
     {
         $option = $this->getIndividualConsumerWorkerOption($consumer, $key);
         if (null !== $option) {
@@ -465,7 +394,7 @@ class RabbitMqSupervisor
         return $this->getGeneralConsumerWorkerOption($key);
     }
 
-    private function getIndividualConsumerWorkerOption($consumer, $key)
+    private function getIndividualConsumerWorkerOption($consumer, $key): mixed
     {
         if (empty($this->config['consumer']['individual'])) {
             return null;
@@ -486,7 +415,7 @@ class RabbitMqSupervisor
         return $this->config['consumer']['individual'][$consumer]['worker'][$key];
     }
 
-    private function getGeneralConsumerWorkerOption($key)
+    private function getGeneralConsumerWorkerOption($key): mixed
     {
         if (!array_key_exists('worker', $this->config['consumer']['general'])) {
             return null;
@@ -502,22 +431,15 @@ class RabbitMqSupervisor
 
     /**
      * Transform bool value to string representation.
-     *
-     * @param boolean $value
-     *
-     * @return string
      */
-    private function transformBoolToString($value)
-    {
+    private function transformBoolToString(bool $value): string {
         return $value ? 'true' : 'false';
     }
 
     /**
      * @param string $fileName file in app/supervisor dir
-     * @param array $vars
      */
-    public function generateWorkerConfiguration($fileName, $vars)
-    {
+    public function generateWorkerConfiguration(string $fileName, array $vars): void {
         $configurationHelper = new ConfigurationHelper();
         $content = $configurationHelper->getConfigurationStringFromDataArray($vars);
         file_put_contents(
@@ -526,10 +448,7 @@ class RabbitMqSupervisor
         );
     }
 
-    /**
-     * @return string
-     */
-    private function createSupervisorConfigurationFilePath()
+    private function createSupervisorConfigurationFilePath(): string
     {
         return $this->paths['configuration_file'];
     }

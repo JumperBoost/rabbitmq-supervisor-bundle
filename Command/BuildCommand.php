@@ -8,17 +8,14 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class BuildCommand extends AbstractRabbitMqSupervisorAwareCommand
 {
-    protected function configure()
-    {
+    protected function configure(): void {
         $this
             ->setName('rabbitmq-supervisor:build')
             ->setDescription('Build supervisor worker configuration for all RabbitMQ consumer.')
-            ->addOption('wait-for-supervisord', null, InputOption::VALUE_NONE)
-        ;
+            ->addOption('wait-for-supervisord', null, InputOption::VALUE_NONE);
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
-    {
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         $this->rabbitMqSupervisor->setWaitForSupervisord((bool) $input->getOption('wait-for-supervisord'));
         $this->rabbitMqSupervisor->build();
         

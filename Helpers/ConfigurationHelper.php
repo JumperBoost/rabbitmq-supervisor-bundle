@@ -4,8 +4,7 @@ namespace Phobetor\RabbitMqSupervisorBundle\Helpers;
 
 class ConfigurationHelper
 {
-    public function getConfigurationStringFromDataArray(array $data)
-    {
+    public function getConfigurationStringFromDataArray(array $data): string {
         $configurationString = '';
 
         foreach ($data as $key => $value) {

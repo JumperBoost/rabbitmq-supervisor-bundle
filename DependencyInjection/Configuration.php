@@ -11,24 +11,14 @@ use Symfony\Component\Config\Definition\Builder\TreeBuilder;
  */
 class Configuration implements ConfigurationInterface
 {
-    /**
-     * @return \Symfony\Component\Config\Definition\Builder\TreeBuilder
-     */
-    public function getConfigTreeBuilder()
-    {
+    public function getConfigTreeBuilder(): TreeBuilder {
         $treeBuilder = new TreeBuilder('rabbit_mq_supervisor');
 
-        // Keep compatibility with symfony/config < 4.2
-        if (\method_exists($treeBuilder, 'getRootNode')) {
-            $rootNode = $treeBuilder->getRootNode();
-        } else {
-            $rootNode = $treeBuilder->root('rabbit_mq_supervisor');
-        }
-
+        $rootNode = $treeBuilder->getRootNode();
         $rootNode
             ->children()
                 ->scalarNode('worker_count')->defaultNull()->end()
-                ->scalarNode('supervisor_instance_identifier')->defaultValue('symfony2')->end()
+                ->scalarNode('supervisor_instance_identifier')->defaultValue('symfony7')->end()
                 ->scalarNode('sock_file_permissions')->defaultValue('0700')->end()
             ->end();
         $this->addPaths($rootNode);
@@ -40,11 +30,8 @@ class Configuration implements ConfigurationInterface
 
     /**
      * Add paths configuration
-     *
-     * @param ArrayNodeDefinition $node
      */
-    protected function addPaths(ArrayNodeDefinition $node)
-    {
+    protected function addPaths(ArrayNodeDefinition $node): void {
         $node
             ->fixXmlConfig('path')
             ->children()
@@ -62,17 +49,13 @@ class Configuration implements ConfigurationInterface
                         ->scalarNode('php_executable')->defaultValue('php')->end()
                     ->end()
                 ->end()
-            ->end()
-        ;
+            ->end();
     }
 
     /**
      * Add commands configuration
-     *
-     * @param ArrayNodeDefinition $node
      */
-    protected function addCommands(ArrayNodeDefinition $node)
-    {
+    protected function addCommands(ArrayNodeDefinition $node): void {
         $node
             ->fixXmlConfig('command')
             ->children()
@@ -85,17 +68,13 @@ class Configuration implements ConfigurationInterface
                         ->scalarNode('rabbitmq_rpc_server')->defaultValue('rabbitmq:rpc-server')->end()
                     ->end()
                 ->end()
-            ->end()
-        ;
+            ->end();
     }
 
     /**
      * Add general and individual consumer configuration
-     *
-     * @param ArrayNodeDefinition $node
      */
-    protected function addConsumer(ArrayNodeDefinition $node)
-    {
+    protected function addConsumer(ArrayNodeDefinition $node): void {
         $consumerChildren = $node
             ->children()
                 ->arrayNode('consumer')
@@ -115,11 +94,8 @@ class Configuration implements ConfigurationInterface
 
     /**
      * Add consumer configuration
-     *
-     * @param ArrayNodeDefinition $node
      */
-    protected function addGeneralConsumerConfiguration(ArrayNodeDefinition $node)
-    {
+    protected function addGeneralConsumerConfiguration(ArrayNodeDefinition $node): void {
         $node
         ->normalizeKeys(false)
         ->addDefaultsIfNotSet()
@@ -171,17 +147,13 @@ class Configuration implements ConfigurationInterface
                         ->end()
                     ->end()
                 ->end()
-            ->end()
-        ;
+            ->end();
     }
 
     /**
      * Add consumer configuration
-     *
-     * @param ArrayNodeDefinition $node
      */
-    protected function addIndividualConsumerConfiguration(ArrayNodeDefinition $node)
-    {
+    protected function addIndividualConsumerConfiguration(ArrayNodeDefinition $node): void {
         $node
             ->normalizeKeys(false)
             ->children()
@@ -231,7 +203,6 @@ class Configuration implements ConfigurationInterface
                         ->end()
                     ->end()
                 ->end()
-            ->end()
-        ;
+            ->end();
     }
 }

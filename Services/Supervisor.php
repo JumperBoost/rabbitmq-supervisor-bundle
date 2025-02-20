@@ -11,45 +11,25 @@ class Supervisor implements LoggerAwareInterface
 {
     use LoggerAwareTrait;
 
-    /**
-     * @var string
-     */
-    private $applicationDirectory;
+    private string $applicationDirectory;
 
-    /**
-     * @var string
-     */
-    private $configurationParameter;
+    private string $configurationParameter;
 
-    /**
-     * @var string
-     */
-    private $identifierParameter;
+    private string $identifierParameter;
 
-    /**
-     * @var bool
-     */
-    private $waitForSupervisord = false;
+    private bool $waitForSupervisord = false;
 
     /**
      * Supervisor constructor.
-     *
-     * @param string $applicationDirectory
-     * @param string $configuration
-     * @param string $identifier
      */
-    public function __construct($applicationDirectory, $configuration, $identifier)
+    public function __construct(string $applicationDirectory, string $configuration, string $identifier)
     {
         $this->applicationDirectory = $applicationDirectory;
         $this->configurationParameter = $configuration ? (' --configuration=' . $configuration) : '';
         $this->identifierParameter    = $identifier    ? (' --identifier='    . $identifier)    : '';
     }
 
-    /**
-     * @param bool $waitForSupervisord
-     */
-    public function setWaitForSupervisord($waitForSupervisord)
-    {
+    public function setWaitForSupervisord(bool $waitForSupervisord): void {
         $this->waitForSupervisord = $waitForSupervisord;
     }
 
@@ -58,10 +38,8 @@ class Supervisor implements LoggerAwareInterface
      *
      * @param $cmd string supervisorctl command
      * @param $failOnError bool indicate id errors should raise an exception
-     * @return \Symfony\Component\Process\Process
      */
-    public function execute($cmd, $failOnError = true)
-    {
+    public function execute(string $cmd, bool $failOnError = true): Process {
         $command = $this->createSupervisorControlCommand($cmd);
         $this->logger->debug('Executing: ' . $command);
         $p = $this->getProcess($command);
@@ -81,12 +59,7 @@ class Supervisor implements LoggerAwareInterface
         return $p;
     }
 
-    /**
-     * @param $cmd
-     * @return string
-     */
-    private function createSupervisorControlCommand($cmd)
-    {
+    private function createSupervisorControlCommand($cmd): string {
         return sprintf(
             'supervisorctl%1$s %2$s',
             $this->configurationParameter,
@@ -97,9 +70,7 @@ class Supervisor implements LoggerAwareInterface
     /**
      * Update configuration and processes
      */
-    public function runAndReload()
-    {
-
+    public function runAndReload(): void {
         // start supervisor and reload configuration
         $commands = [];
         $commands[] = sprintf(' && %s', $this->createSupervisorControlCommand('reread'));
@@ -112,8 +83,7 @@ class Supervisor implements LoggerAwareInterface
      *
      * @param $followingCommand string command to execute after supervisord was started
      */
-    public function run($followingCommand = '')
-    {
+    public function run(string $followingCommand = ''): void {
         $result = $this->execute('status', false)->getOutput();
         if (strpos($result, 'sock no such file') || strpos($result, 'refused connection')) {
             $command = sprintf(
@@ -138,17 +108,7 @@ class Supervisor implements LoggerAwareInterface
         }
     }
 
-    /**
-     * @param string $command
-     * @return Process
-     */
-    private function getProcess($command)
-    {
-        // BC layer for Symfony 4.1 and older
-        if (\method_exists(Process::class, 'fromShellCommandline')) {
-            return Process::fromShellCommandline($command);
-        }
-
-        return new Process($command);
+    private function getProcess(string $command): Process {
+        return Process::fromShellCommandline($command);
     }
 }

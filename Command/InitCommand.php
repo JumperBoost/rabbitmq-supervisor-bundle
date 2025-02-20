@@ -7,16 +7,13 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class InitCommand extends AbstractRabbitMqSupervisorAwareCommand
 {
-    protected function configure()
-    {
+    protected function configure(): void {
         $this
             ->setName('rabbitmq-supervisor:init')
-            ->setDescription('Build supervisor configuration.')
-        ;
+            ->setDescription('Build supervisor configuration.');
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
-    {
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         $this->rabbitMqSupervisor->init();
         
         return 0;

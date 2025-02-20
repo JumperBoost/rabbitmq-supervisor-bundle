@@ -7,16 +7,9 @@ use Symfony\Component\Console\Command\Command;
 
 abstract class AbstractRabbitMqSupervisorAwareCommand extends Command
 {
-    /**
-     * @var RabbitMqSupervisor
-     */
-    protected $rabbitMqSupervisor;
+    protected RabbitMqSupervisor $rabbitMqSupervisor;
 
-    /**
-     * @param RabbitMqSupervisor $rabbitMqSupervisor
-     * @param string|null $name
-     */
-    public function __construct(RabbitMqSupervisor $rabbitMqSupervisor, string $name = null)
+    public function __construct(RabbitMqSupervisor $rabbitMqSupervisor, ?string $name = null)
     {
         parent::__construct($name);
         $this->rabbitMqSupervisor = $rabbitMqSupervisor;

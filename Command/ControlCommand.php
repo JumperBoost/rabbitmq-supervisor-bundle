@@ -9,18 +9,15 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class ControlCommand extends AbstractRabbitMqSupervisorAwareCommand
 {
-    protected function configure()
-    {
+    protected function configure(): void {
         $this
             ->setName('rabbitmq-supervisor:control')
             ->setDescription('Common commands to control the supervisord process')
             ->addArgument('cmd', InputArgument::REQUIRED, '(start|stop|restart|hup)')
-            ->addOption('wait-for-supervisord', null, InputOption::VALUE_NONE)
-        ;
+            ->addOption('wait-for-supervisord', null, InputOption::VALUE_NONE);
     }
 
-    protected function execute(InputInterface $input, OutputInterface $output)
-    {
+    protected function execute(InputInterface $input, OutputInterface $output): int {
         $this->rabbitMqSupervisor->setWaitForSupervisord((bool) $input->getOption('wait-for-supervisord'));
 
         switch ($input->getArgument('cmd')) {
